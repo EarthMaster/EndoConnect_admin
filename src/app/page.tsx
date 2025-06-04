@@ -11,6 +11,11 @@ import {
   Dropdown,
   Breadcrumb,
   Tag,
+  Card,
+  Row,
+  Col,
+  Statistic,
+  Progress,
 } from 'antd';
 import {
   MenuFoldOutlined,
@@ -24,12 +29,15 @@ import {
   FormOutlined,
   MedicineBoxOutlined,
   BarChartOutlined,
+  SafetyOutlined,
+  ExperimentOutlined,
+  HeartOutlined,
 } from '@ant-design/icons';
-import UserManagement from './components/UserManagement';
-import SERPDashboard from './components/SERPDashboard';
-import EducationalModules from './components/EducationalModules';
-import FeedbackForms from './components/FeedbackForms';
-import ClinicalDataManagement from './components/ClinicalDataManagement';
+import UserManagement from '../components/UserManagement';
+import SERPDashboard from '../components/SERPDashboard';
+import EducationalModules from '../components/EducationalModules';
+import ScreeningQuestionManagement from '../components/FeedbackForms';
+import ClinicalDataManagement from '../components/ClinicalDataManagement';
 
 const { Header, Sider, Content } = Layout;
 
@@ -53,24 +61,19 @@ export default function AdminPanel() {
       label: 'User Management',
     },
     {
+      key: 'screening-questions',
+      icon: <FormOutlined />,
+      label: 'Screening Questions',
+    },
+    {
       key: 'educational-modules',
       icon: <BookOutlined />,
       label: 'Educational Modules',
     },
     {
-      key: 'feedback-forms',
-      icon: <FormOutlined />,
-      label: 'Feedback & Engagement',
-    },
-    {
-      key: 'clinical-data',
-      icon: <MedicineBoxOutlined />,
-      label: 'Clinical Data Management',
-    },
-    {
-      key: 'settings',
-      icon: <SettingOutlined />,
-      label: 'Settings',
+      key: 'feedback-data',
+      icon: <DashboardOutlined />,
+      label: 'Feedback & Data',
     },
   ];
 
@@ -93,19 +96,12 @@ export default function AdminPanel() {
         return <SERPDashboard />;
       case 'user-management':
         return <UserManagement />;
+      case 'screening-questions':
+        return <ScreeningQuestionManagement />;
       case 'educational-modules':
         return <EducationalModules />;
-      case 'feedback-forms':
-        return <FeedbackForms />;
-      case 'clinical-data':
+      case 'feedback-data':
         return <ClinicalDataManagement />;
-      case 'settings':
-        return (
-          <div style={{ padding: 24 }}>
-            <h2>Settings</h2>
-            <p>System settings and configuration options.</p>
-          </div>
-        );
       default:
         return <SERPDashboard />;
     }
@@ -115,17 +111,16 @@ export default function AdminPanel() {
     const titles = {
       'serp-dashboard': 'SERP Dashboard',
       'user-management': 'User Management',
+      'screening-questions': 'Screening Questions',
       'educational-modules': 'Educational Modules',
-      'feedback-forms': 'Feedback & Engagement',
-      'clinical-data': 'Clinical Data Management',
-      'settings': 'Settings',
+      'feedback-data': 'Feedback & Data Management',
     };
-    return titles[key as keyof typeof titles] || 'Dashboard';
+    return titles[key as keyof typeof titles] || 'SERP Dashboard';
   };
 
   const breadcrumbItems = [
     {
-      title: 'Admin Panel',
+      title: 'EndoConnect Admin',
     },
     {
       title: getBreadcrumbTitle(selectedKey),
@@ -133,7 +128,7 @@ export default function AdminPanel() {
   ];
 
   // Mock user role - in real app, this would come from authentication
-  const userRole = 'Clinic Admin'; // Could be 'Clinic Admin', 'Researcher', 'Operator'
+  const userRole = 'Coordenador Técnico'; // Could be 'Coordenador Técnico', 'Pesquisador', 'Desenvolvedor'
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
@@ -143,19 +138,21 @@ export default function AdminPanel() {
         collapsed={collapsed}
         width={280}
         collapsedWidth={80}
+        theme="dark"
       >
         <div style={{
-          height: 32,
+          height: 64,
           margin: 16,
-          background: 'rgba(255, 255, 255, 0.2)',
-          borderRadius: 6,
+          background: 'linear-gradient(135deg, #5D3FD3, #A6B1E1)',
+          borderRadius: 8,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           color: 'white',
           fontWeight: 'bold',
+          fontSize: collapsed ? '14px' : '16px',
         }}>
-          {collapsed ? 'AP' : 'Admin Panel'}
+          {collapsed ? 'EC' : 'EndoConnect'}
         </div>
         <Menu
           theme="dark"
@@ -168,12 +165,13 @@ export default function AdminPanel() {
       <Layout>
         <Header
           style={{
-            padding: '0 16px',
+            padding: '0 24px',
             background: colorBgContainer,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            boxShadow: '0 1px 4px rgba(0,21,41,.08)',
+            boxShadow: '0 2px 8px rgba(93, 63, 211, 0.1)',
+            borderBottom: '2px solid #5D3FD3',
           }}
         >
           <Space>
@@ -185,13 +183,14 @@ export default function AdminPanel() {
                 fontSize: '16px',
                 width: 64,
                 height: 64,
+                color: '#5D3FD3',
               }}
             />
             <Breadcrumb items={breadcrumbItems} />
           </Space>
           
           <Space>
-            <Tag color="blue">{userRole}</Tag>
+            <Tag color="#5D3FD3">{userRole}</Tag>
             <Dropdown
               menu={{
                 items: userMenuItems,
@@ -204,16 +203,16 @@ export default function AdminPanel() {
               placement="bottomRight"
             >
               <Space style={{ cursor: 'pointer' }}>
-                <Avatar icon={<UserOutlined />} />
-                <span>Admin User</span>
+                <Avatar style={{ backgroundColor: '#5D3FD3' }} icon={<UserOutlined />} />
+                <span>Pavlo (Dev)</span>
               </Space>
             </Dropdown>
           </Space>
         </Header>
         <Content
           style={{
-            margin: '16px',
-            padding: 24,
+            margin: '24px',
+            padding: 0,
             minHeight: 280,
             background: colorBgContainer,
             borderRadius: borderRadiusLG,
