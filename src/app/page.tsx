@@ -34,6 +34,7 @@ import {
   HeartOutlined,
 } from '@ant-design/icons';
 import UserManagement from '../components/UserManagement';
+import TeamMemberManagement from '../components/TeamMemberManagement';
 import SERPDashboard from '../components/SERPDashboard';
 import EducationalModules from '../components/EducationalModules';
 import ScreeningQuestionManagement from '../components/FeedbackForms';
@@ -59,6 +60,11 @@ export default function AdminPanel() {
       key: 'user-management',
       icon: <TeamOutlined />,
       label: 'User Management',
+    },
+    {
+      key: 'team-member-management',
+      icon: <UserOutlined />,
+      label: 'Team Member Management',
     },
     {
       key: 'screening-questions',
@@ -96,6 +102,8 @@ export default function AdminPanel() {
         return <SERPDashboard />;
       case 'user-management':
         return <UserManagement />;
+      case 'team-member-management':
+        return <TeamMemberManagement />;
       case 'screening-questions':
         return <ScreeningQuestionManagement />;
       case 'educational-modules':
@@ -111,6 +119,7 @@ export default function AdminPanel() {
     const titles = {
       'serp-dashboard': 'SERP Dashboard',
       'user-management': 'User Management',
+      'team-member-management': 'Team Member Management',
       'screening-questions': 'Screening Questions',
       'educational-modules': 'Educational Modules',
       'feedback-data': 'Feedback & Data Management',
