@@ -76,8 +76,10 @@ export default function UserManagement() {
   const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [consentModalVisible, setConsentModalVisible] = useState(false);
+  const [editModalVisible, setEditModalVisible] = useState(false);
   const [selectedUser, setSelectedUser] = useState<EndoUser | null>(null);
   const [form] = Form.useForm();
+  const [editForm] = Form.useForm();
 
   // Mock data for EndoConnect users
   useEffect(() => {
@@ -199,6 +201,46 @@ export default function UserManagement() {
   const handleViewConsent = (user: EndoUser) => {
     setSelectedUser(user);
     setConsentModalVisible(true);
+  };
+
+  const handleEditUser = (user: EndoUser) => {
+    setSelectedUser(user);
+    editForm.setFieldsValue({
+      city: user.city,
+      state: user.state,
+      status: user.status,
+      riskLevel: user.riskLevel,
+      symptomaticProfile: user.symptomaticProfile,
+    });
+    setEditModalVisible(true);
+  };
+
+  const handleUpdateUser = async () => {
+    try {
+      const values = await editForm.validateFields();
+      if (selectedUser) {
+        setUsers(users.map(user => 
+          user.id === selectedUser.id 
+            ? { ...user, ...values }
+            : user
+        ));
+        message.success('Usuária atualizada com sucesso!');
+        setEditModalVisible(false);
+        setSelectedUser(null);
+        editForm.resetFields();
+      }
+    } catch (error) {
+      message.error('Erro ao atualizar usuária');
+    }
+  };
+
+  const handleDeleteUser = async (userId: string) => {
+    try {
+      setUsers(users.filter(user => user.id !== userId));
+      message.success('Usuária removida com sucesso!');
+    } catch (error) {
+      message.error('Erro ao remover usuária');
+    }
   };
 
   const handleRevokeConsent = async (userId: string) => {
@@ -346,13 +388,28 @@ export default function UserManagement() {
       title: 'Ações',
       key: 'actions',
       render: (_, record) => (
-        <Space>
+        <Space wrap>
           <Button size="small" icon={<EyeOutlined />} onClick={() => handleViewDetails(record)}>
             Detalhes
+          </Button>
+          <Button size="small" icon={<EditOutlined />} onClick={() => handleEditUser(record)}>
+            Editar
           </Button>
           <Button size="small" icon={<SafetyOutlined />} onClick={() => handleViewConsent(record)}>
             Consentimento
           </Button>
+          <Popconfirm
+            title="Remover usuária?"
+            description="Esta ação irá remover permanentemente os dados da usuária. Tem certeza?"
+            onConfirm={() => handleDeleteUser(record.id)}
+            okText="Sim, remover"
+            cancelText="Cancelar"
+            okType="danger"
+          >
+            <Button size="small" danger icon={<DeleteOutlined />}>
+              Remover
+            </Button>
+          </Popconfirm>
           {record.status === 'em_risco' && (
             <Button size="small" type="primary" danger icon={<WarningOutlined />}>
               Intervenção
@@ -503,6 +560,99 @@ export default function UserManagement() {
                 <p><strong>Última Atividade:</strong> {selectedUser.lastActivity}</p>
             </Col>
           </Row>
+          </div>
+        )}
+      </Modal>
+
+      {/* Edit User Modal */}
+      <Modal
+        title="✏️ Editar Usuária"
+        open={editModalVisible}
+        onCancel={() => {
+          setEditModalVisible(false);
+          setSelectedUser(null);
+          editForm.resetFields();
+        }}
+        onOk={handleUpdateUser}
+        width={600}
+        okText="Salvar Alterações"
+        cancelText="Cancelar"
+      >
+        {selectedUser && (
+          <div>
+            <div style={{ marginBottom: 16, padding: 12, backgroundColor: '#f5f5f5', borderRadius: 6 }}>
+              <p style={{ margin: 0, fontWeight: 'bold' }}>Usuária: {selectedUser.anonymousId}</p>
+              <p style={{ margin: 0, fontSize: '12px', color: '#666' }}>
+                ID: {selectedUser.id} | Idade: {selectedUser.age} anos
+              </p>
+            </div>
+            <Form
+              form={editForm}
+              layout="vertical"
+              style={{ maxWidth: '100%' }}
+            >
+              <Row gutter={16}>
+                <Col span={12}>
+                  <Form.Item
+                    label="Cidade"
+                    name="city"
+                    rules={[{ required: true, message: 'Cidade é obrigatória' }]}
+                  >
+                    <Input placeholder="Ex: São Paulo" />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item
+                    label="Estado"
+                    name="state"
+                    rules={[{ required: true, message: 'Estado é obrigatório' }]}
+                  >
+                    <Input placeholder="Ex: SP" />
+                  </Form.Item>
+                </Col>
+              </Row>
+              <Row gutter={16}>
+                <Col span={12}>
+                  <Form.Item
+                    label="Status"
+                    name="status"
+                    rules={[{ required: true, message: 'Status é obrigatório' }]}
+                  >
+                    <Select placeholder="Selecione o status">
+                      <Option value="ativa">Ativa</Option>
+                      <Option value="inativa">Inativa</Option>
+                      <Option value="em_risco">Em Risco</Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item
+                    label="Nível de Risco"
+                    name="riskLevel"
+                    rules={[{ required: true, message: 'Nível de risco é obrigatório' }]}
+                  >
+                    <Select placeholder="Selecione o nível de risco">
+                      <Option value="baixo">Baixo</Option>
+                      <Option value="medio">Médio</Option>
+                      <Option value="alto">Alto</Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+              </Row>
+              <Form.Item
+                label="Perfil Sintomático"
+                name="symptomaticProfile"
+                rules={[{ required: true, message: 'Perfil sintomático é obrigatório' }]}
+              >
+                <Select placeholder="Selecione o perfil sintomático">
+                  <Option value="pelvico">Pélvico</Option>
+                  <Option value="intestinal">Intestinal</Option>
+                  <Option value="urinario">Urinário</Option>
+                  <Option value="emocional">Emocional</Option>
+                  <Option value="misto">Misto</Option>
+                </Select>
+              </Form.Item>
+            </Form>
           </div>
         )}
       </Modal>

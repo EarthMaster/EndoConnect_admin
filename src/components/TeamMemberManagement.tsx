@@ -14,6 +14,12 @@ import {
   Badge,
   Alert,
   Avatar,
+  Form,
+  Input,
+  Select,
+  message,
+  Popconfirm,
+  Tooltip,
 } from 'antd';
 import {
   UserOutlined,
@@ -27,6 +33,10 @@ import {
   CalendarOutlined,
   MailOutlined,
   PhoneOutlined,
+  PlusOutlined,
+  UserAddOutlined,
+  CheckOutlined,
+  ClockCircleOutlined,
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 
@@ -45,13 +55,40 @@ interface TeamMember {
   projectsAssigned: number;
   accessLevel: 'admin' | 'moderador' | 'usuario';
   lastActive: string;
+  invitedBy?: string;
+  invitedAt?: string;
+  activatedBy?: string;
+  activatedAt?: string;
+}
+
+interface InvitationLog {
+  id: string;
+  inviterName: string;
+  inviterEmail: string;
+  inviteeName: string;
+  inviteeEmail: string;
+  invitedAt: string;
+  status: 'pendente' | 'ativado' | 'rejeitado';
+  activatedBy?: string;
+  activatedAt?: string;
 }
 
 export default function TeamMemberManagement() {
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [invitationLogs, setInvitationLogs] = useState<InvitationLog[]>([]);
   const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
+  const [inviteModalVisible, setInviteModalVisible] = useState(false);
+  const [inviteLogsModalVisible, setInviteLogsModalVisible] = useState(false);
   const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
+  const [inviteForm] = Form.useForm();
+
+  // Mock current user - in real app, this would come from authentication
+  const currentUser = {
+    name: 'Dr. Maria Silva',
+    email: 'maria.silva@endoconnect.com',
+    id: 'TM-001'
+  };
 
   // Mock data for team members
   useEffect(() => {
@@ -136,11 +173,26 @@ export default function TeamMemberManagement() {
           specialty: 'Psicologia',
           projectsAssigned: 0,
           accessLevel: 'usuario',
-          lastActive: 'Nunca'
+          lastActive: 'Nunca',
+          invitedBy: 'Dr. Maria Silva',
+          invitedAt: '2024-01-20 14:30:00'
+        }
+      ];
+
+      const mockInvitationLogs: InvitationLog[] = [
+        {
+          id: 'INV-001',
+          inviterName: 'Dr. Maria Silva',
+          inviterEmail: 'maria.silva@endoconnect.com',
+          inviteeName: 'Dra. Fernanda Lima',
+          inviteeEmail: 'fernanda.lima@endoconnect.com',
+          invitedAt: '2024-01-20 14:30:00',
+          status: 'pendente'
         }
       ];
 
       setTeamMembers(mockTeamMembers);
+      setInvitationLogs(mockInvitationLogs);
       setLoading(false);
     }, 1000);
   }, []);
@@ -148,6 +200,100 @@ export default function TeamMemberManagement() {
   const handleViewDetails = (member: TeamMember) => {
     setSelectedMember(member);
     setModalVisible(true);
+  };
+
+  const handleInviteMember = async () => {
+    try {
+      const values = await inviteForm.validateFields();
+      const currentDate = new Date().toISOString().slice(0, 19).replace('T', ' ');
+      const newMemberId = `TM-${String(teamMembers.length + 1).padStart(3, '0')}`;
+      
+      const newMember: TeamMember = {
+        id: newMemberId,
+        name: values.name,
+        email: values.email,
+        phone: values.phone,
+        role: values.role,
+        department: values.department,
+        specialty: values.specialty,
+        permissions: getDefaultPermissions(values.role),
+        status: 'pendente',
+        joinDate: currentDate.split(' ')[0],
+        lastLogin: 'Nunca',
+        projectsAssigned: 0,
+        accessLevel: values.accessLevel,
+        lastActive: 'Nunca',
+        invitedBy: currentUser.name,
+        invitedAt: currentDate
+      };
+
+      const newInvitationLog: InvitationLog = {
+        id: `INV-${String(invitationLogs.length + 1).padStart(3, '0')}`,
+        inviterName: currentUser.name,
+        inviterEmail: currentUser.email,
+        inviteeName: values.name,
+        inviteeEmail: values.email,
+        invitedAt: currentDate,
+        status: 'pendente'
+      };
+
+      setTeamMembers([...teamMembers, newMember]);
+      setInvitationLogs([...invitationLogs, newInvitationLog]);
+      setInviteModalVisible(false);
+      inviteForm.resetFields();
+      message.success(`Convite enviado para ${values.name}!`);
+    } catch (error) {
+      message.error('Erro ao enviar convite');
+    }
+  };
+
+  const handleActivateMember = async (memberId: string) => {
+    try {
+      const currentDate = new Date().toISOString().slice(0, 19).replace('T', ' ');
+      
+      setTeamMembers(teamMembers.map(member => 
+        member.id === memberId 
+          ? { 
+              ...member, 
+              status: 'ativo',
+              activatedBy: currentUser.name,
+              activatedAt: currentDate,
+              lastLogin: currentDate.split(' ')[0],
+              lastActive: 'Recém ativado'
+            }
+          : member
+      ));
+
+      setInvitationLogs(invitationLogs.map(log => 
+        log.inviteeEmail === teamMembers.find(m => m.id === memberId)?.email
+          ? { 
+              ...log, 
+              status: 'ativado',
+              activatedBy: currentUser.name,
+              activatedAt: currentDate
+            }
+          : log
+      ));
+
+      message.success('Membro ativado com sucesso!');
+    } catch (error) {
+      message.error('Erro ao ativar membro');
+    }
+  };
+
+  const getDefaultPermissions = (role: string): string[] => {
+    switch (role) {
+      case 'coordenador':
+        return ['user_management', 'data_analysis', 'team_management', 'system_config'];
+      case 'pesquisador':
+        return ['data_analysis', 'screening_questions', 'educational_modules'];
+      case 'desenvolvedor':
+        return ['system_config', 'user_management', 'data_export'];
+      case 'analista':
+        return ['data_analysis', 'feedback_data'];
+      default:
+        return ['data_analysis'];
+    }
   };
 
   const getRoleIcon = (role: string) => {
@@ -288,9 +434,17 @@ export default function TeamMemberManagement() {
             Detalhes
           </Button>
           {record.status === 'pendente' && (
-            <Button size="small" type="primary">
-              Ativar
-            </Button>
+            <Popconfirm
+              title="Ativar membro?"
+              description={`Deseja ativar o acesso de ${record.name} ao sistema?`}
+              onConfirm={() => handleActivateMember(record.id)}
+              okText="Sim, ativar"
+              cancelText="Cancelar"
+            >
+              <Button size="small" type="primary" icon={<CheckOutlined />}>
+                Ativar
+              </Button>
+            </Popconfirm>
           )}
         </Space>
       ),
@@ -321,7 +475,7 @@ export default function TeamMemberManagement() {
           showIcon
           style={{ marginBottom: 24 }}
           action={
-            <Button size="small" type="primary">
+            <Button size="small" type="primary" onClick={() => setInviteLogsModalVisible(true)}>
               Revisar Pendências
             </Button>
           }
@@ -371,7 +525,27 @@ export default function TeamMemberManagement() {
         </Col>
       </Row>
 
-      <Card title="👥 Lista da Equipe">
+      <Card 
+        title="👥 Lista da Equipe"
+        extra={
+          <Space>
+            <Button 
+              type="default" 
+              icon={<ClockCircleOutlined />} 
+              onClick={() => setInviteLogsModalVisible(true)}
+            >
+              Histórico de Convites
+            </Button>
+            <Button 
+              type="primary" 
+              icon={<UserAddOutlined />} 
+              onClick={() => setInviteModalVisible(true)}
+            >
+              Convidar Membro
+            </Button>
+          </Space>
+        }
+      >
         <Table
           columns={teamColumns}
           dataSource={teamMembers}
@@ -446,6 +620,193 @@ export default function TeamMemberManagement() {
             </div>
           </div>
         )}
+      </Modal>
+
+      {/* Invite Member Modal */}
+      <Modal
+        title="👨‍💼 Convidar Novo Membro"
+        open={inviteModalVisible}
+        onCancel={() => {
+          setInviteModalVisible(false);
+          inviteForm.resetFields();
+        }}
+        onOk={handleInviteMember}
+        width={700}
+        okText="Enviar Convite"
+        cancelText="Cancelar"
+      >
+        <Form
+          form={inviteForm}
+          layout="vertical"
+          style={{ maxWidth: '100%' }}
+        >
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                label="Nome Completo"
+                name="name"
+                rules={[{ required: true, message: 'Nome é obrigatório' }]}
+              >
+                <Input placeholder="Ex: Dr. João Silva" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                label="Email"
+                name="email"
+                rules={[
+                  { required: true, message: 'Email é obrigatório' },
+                  { type: 'email', message: 'Email inválido' }
+                ]}
+              >
+                <Input placeholder="Ex: joao.silva@endoconnect.com" />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                label="Telefone"
+                name="phone"
+                rules={[{ required: true, message: 'Telefone é obrigatório' }]}
+              >
+                <Input placeholder="Ex: +55 11 99999-0000" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                label="Especialidade"
+                name="specialty"
+                rules={[{ required: true, message: 'Especialidade é obrigatória' }]}
+              >
+                <Input placeholder="Ex: Ginecologia, Psicologia" />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={16}>
+            <Col span={8}>
+              <Form.Item
+                label="Função"
+                name="role"
+                rules={[{ required: true, message: 'Função é obrigatória' }]}
+              >
+                <Select placeholder="Selecione a função">
+                  <Select.Option value="coordenador">Coordenador</Select.Option>
+                  <Select.Option value="pesquisador">Pesquisador</Select.Option>
+                  <Select.Option value="desenvolvedor">Desenvolvedor</Select.Option>
+                  <Select.Option value="analista">Analista</Select.Option>
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item
+                label="Departamento"
+                name="department"
+                rules={[{ required: true, message: 'Departamento é obrigatório' }]}
+              >
+                <Select placeholder="Selecione o departamento">
+                  <Select.Option value="Coordenação Técnica">Coordenação Técnica</Select.Option>
+                  <Select.Option value="Pesquisa Clínica">Pesquisa Clínica</Select.Option>
+                  <Select.Option value="Tecnologia">Tecnologia</Select.Option>
+                  <Select.Option value="Análise de Dados">Análise de Dados</Select.Option>
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item
+                label="Nível de Acesso"
+                name="accessLevel"
+                rules={[{ required: true, message: 'Nível de acesso é obrigatório' }]}
+              >
+                <Select placeholder="Selecione o nível">
+                  <Select.Option value="admin">Admin</Select.Option>
+                  <Select.Option value="moderador">Moderador</Select.Option>
+                  <Select.Option value="usuario">Usuário</Select.Option>
+                </Select>
+              </Form.Item>
+            </Col>
+          </Row>
+        </Form>
+      </Modal>
+
+      {/* Invitation Logs Modal */}
+      <Modal
+        title="📋 Histórico de Convites"
+        open={inviteLogsModalVisible}
+        onCancel={() => setInviteLogsModalVisible(false)}
+        footer={[
+          <Button key="close" onClick={() => setInviteLogsModalVisible(false)}>
+            Fechar
+          </Button>
+        ]}
+        width={900}
+      >
+        <Table
+          dataSource={invitationLogs}
+          rowKey="id"
+          pagination={false}
+          columns={[
+            {
+              title: 'Convidado',
+              key: 'invitee',
+              render: (_, record) => (
+                <div>
+                  <div style={{ fontWeight: 'bold' }}>{record.inviteeName}</div>
+                  <div style={{ fontSize: '12px', color: '#666' }}>{record.inviteeEmail}</div>
+                </div>
+              ),
+            },
+            {
+              title: 'Convidado por',
+              key: 'inviter',
+              render: (_, record) => (
+                <div>
+                  <div style={{ fontWeight: 'bold' }}>{record.inviterName}</div>
+                  <div style={{ fontSize: '12px', color: '#666' }}>{record.inviterEmail}</div>
+                </div>
+              ),
+            },
+            {
+              title: 'Data do Convite',
+              dataIndex: 'invitedAt',
+              key: 'invitedAt',
+              render: (date: string) => new Date(date).toLocaleString('pt-BR'),
+            },
+            {
+              title: 'Status',
+              dataIndex: 'status',
+              key: 'status',
+              render: (status: string) => {
+                const colors = {
+                  'pendente': '#faad14',
+                  'ativado': '#52c41a',
+                  'rejeitado': '#f5222d'
+                };
+                return (
+                  <Tag color={colors[status as keyof typeof colors]}>
+                    {status.charAt(0).toUpperCase() + status.slice(1)}
+                  </Tag>
+                );
+              },
+            },
+            {
+              title: 'Ativado por',
+              key: 'activated',
+              render: (_, record) => (
+                record.activatedBy ? (
+                  <div>
+                    <div style={{ fontWeight: 'bold' }}>{record.activatedBy}</div>
+                    <div style={{ fontSize: '12px', color: '#666' }}>
+                      {record.activatedAt ? new Date(record.activatedAt).toLocaleString('pt-BR') : ''}
+                    </div>
+                  </div>
+                ) : (
+                  <span style={{ color: '#999' }}>-</span>
+                )
+              ),
+            },
+          ]}
+        />
       </Modal>
     </div>
   );
