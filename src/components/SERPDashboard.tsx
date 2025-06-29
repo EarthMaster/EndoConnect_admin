@@ -359,6 +359,7 @@ export default function SERPDashboard() {
                       dataSource={engagementData.moduleEngagement}
                       pagination={false}
                       size="small"
+                      rowKey="module"
                       columns={[
                         {
                           title: 'Módulo',
