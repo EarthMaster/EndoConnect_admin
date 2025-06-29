@@ -16,22 +16,16 @@ import {
   Row,
   Col,
   Statistic,
-  Tabs,
+
   Badge,
-  DatePicker,
   Alert,
 } from 'antd';
 import {
-  PlusOutlined,
   EditOutlined,
   DeleteOutlined,
   UserOutlined,
-  TeamOutlined,
   HeartOutlined,
-  ExperimentOutlined,
   WarningOutlined,
-  AlertOutlined,
-  CalendarOutlined,
   FileTextOutlined,
   SafetyOutlined,
   EyeOutlined,
@@ -39,7 +33,6 @@ import {
 import type { ColumnsType } from 'antd/es/table';
 
 const { Option } = Select;
-const { TabPane } = Tabs;
 
 interface EndoUser {
   id: string;
@@ -72,13 +65,12 @@ interface ConsentRecord {
 
 export default function UserManagement() {
   const [users, setUsers] = useState<EndoUser[]>([]);
-  const [consents, setConsents] = useState<ConsentRecord[]>([]);
+  const [consents, setConsents] = useState<ConsentRecord[]>([]); // eslint-disable-line @typescript-eslint/no-unused-vars
   const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [consentModalVisible, setConsentModalVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [selectedUser, setSelectedUser] = useState<EndoUser | null>(null);
-  const [form] = Form.useForm();
   const [editForm] = Form.useForm();
 
   // Mock data for EndoConnect users
@@ -229,7 +221,7 @@ export default function UserManagement() {
         setSelectedUser(null);
         editForm.resetFields();
       }
-    } catch (error) {
+    } catch {
       message.error('Erro ao atualizar usuária');
     }
   };
@@ -238,7 +230,7 @@ export default function UserManagement() {
     try {
       setUsers(users.filter(user => user.id !== userId));
       message.success('Usuária removida com sucesso!');
-    } catch (error) {
+    } catch {
       message.error('Erro ao remover usuária');
     }
   };
@@ -252,7 +244,7 @@ export default function UserManagement() {
       );
       setUsers(updatedUsers);
       message.success('Consentimento revogado com sucesso');
-    } catch (error) {
+    } catch {
       message.error('Erro ao revogar consentimento');
     }
   };

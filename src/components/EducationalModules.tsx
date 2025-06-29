@@ -17,7 +17,7 @@ import {
   Col,
   Statistic,
   Progress,
-  Tabs,
+
   Alert,
   Popconfirm,
 } from 'antd';
@@ -39,7 +39,6 @@ import type { UploadProps } from 'antd';
 
 const { Option } = Select;
 const { TextArea } = Input;
-const { TabPane } = Tabs;
 
 interface EducationalModule {
   id: string;
@@ -202,12 +201,12 @@ export default function EducationalModuleManagement() {
     try {
       setModules(modules.filter(m => m.id !== id));
       message.success('Módulo removido com sucesso');
-    } catch (error) {
+    } catch {
       message.error('Erro ao remover módulo');
     }
   };
 
-  const handleSubmitModule = async (values: any) => {
+  const handleSubmitModule = async (values: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
     try {
     if (editingModule) {
         const updatedModules = modules.map(m =>
@@ -233,7 +232,7 @@ export default function EducationalModuleManagement() {
     }
     setModalVisible(false);
     form.resetFields();
-    } catch (error) {
+    } catch {
       message.error('Erro ao salvar módulo');
     }
   };

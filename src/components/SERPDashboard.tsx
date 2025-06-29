@@ -1,19 +1,16 @@
 'use client';
 
-import { Card, Row, Col, Statistic, Progress, Alert, Table, Tag, Space, Button, Tabs, Divider } from 'antd';
+import { Card, Row, Col, Statistic, Progress, Alert, Table, Tag, Space, Button, Tabs } from 'antd';
 import { 
   HeartOutlined, 
   WarningOutlined, 
   CheckCircleOutlined, 
   ClockCircleOutlined,
   UserOutlined,
-  RiseOutlined,
   DashboardOutlined,
   EyeOutlined,
-  CalendarOutlined,
   ExclamationCircleOutlined,
   MedicineBoxOutlined,
-  BookOutlined,
   AlertOutlined,
   TrophyOutlined,
   BarChartOutlined
@@ -101,7 +98,7 @@ export default function SERPDashboard() {
       title: 'Usuária',
       dataIndex: 'userId',
       key: 'userId',
-      render: (userId: string, record: any) => (
+      render: (userId: string, record: { profile: string }) => (
         <Space direction="vertical" size="small">
           <Tag color="#5D3FD3">{userId}</Tag>
           <Tag color="#A6B1E1" style={{ fontSize: '11px' }}>{record.profile}</Tag>
@@ -167,7 +164,7 @@ export default function SERPDashboard() {
     {
       title: 'Ações',
       key: 'actions',
-      render: (_: any, record: any) => (
+      render: (_: unknown, record: { status: string }) => (
         <Space>
           <Button size="small" icon={<EyeOutlined />}>Ver Perfil</Button>
           {record.status === 'urgente' && (
@@ -180,14 +177,7 @@ export default function SERPDashboard() {
     },
   ];
 
-  const getRiskLevelColor = (level: 'low' | 'medium' | 'high') => {
-    switch (level) {
-      case 'high': return '#f5222d';
-      case 'medium': return '#faad14';
-      case 'low': return '#52c41a';
-      default: return '#d9d9d9';
-    }
-  };
+
 
   return (
     <div style={{ padding: '0 8px' }}>

@@ -11,27 +11,17 @@ import {
   Dropdown,
   Breadcrumb,
   Tag,
-  Card,
-  Row,
-  Col,
-  Statistic,
-  Progress,
 } from 'antd';
 import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   UserOutlined,
   DashboardOutlined,
-  SettingOutlined,
   LogoutOutlined,  
   TeamOutlined,
   BookOutlined,
   FormOutlined,
-  MedicineBoxOutlined,
   BarChartOutlined,
-  SafetyOutlined,
-  ExperimentOutlined,
-  HeartOutlined,
 } from '@ant-design/icons';
 import UserManagement from '../components/UserManagement';
 import TeamMemberManagement from '../components/TeamMemberManagement';

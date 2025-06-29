@@ -17,7 +17,6 @@ import {
   Col,
   Statistic,
   Switch,
-  Radio,
   Divider,
   Alert,
   Tabs,
@@ -29,7 +28,6 @@ import {
   QuestionOutlined,
   BranchesOutlined,
   CheckCircleOutlined,
-  WarningOutlined,
   EyeOutlined,
   CopyOutlined,
   OrderedListOutlined,
@@ -75,11 +73,8 @@ export default function ScreeningQuestionManagement() {
   const [flows, setFlows] = useState<TriageFlow[]>([]);
   const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
-  const [flowModalVisible, setFlowModalVisible] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState<ScreeningQuestion | null>(null);
-  const [editingFlow, setEditingFlow] = useState<TriageFlow | null>(null);
   const [form] = Form.useForm();
-  const [flowForm] = Form.useForm();
 
   // Mock data for EndoConnect screening questions
   useEffect(() => {
@@ -201,12 +196,12 @@ export default function ScreeningQuestionManagement() {
     try {
       setQuestions(questions.filter(q => q.id !== id));
       message.success('Pergunta removida com sucesso');
-    } catch (error) {
+    } catch {
       message.error('Erro ao remover pergunta');
     }
   };
 
-  const handleSubmitQuestion = async (values: any) => {
+  const handleSubmitQuestion = async (values: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
     try {
       const questionData = {
         ...values,
@@ -239,7 +234,7 @@ export default function ScreeningQuestionManagement() {
       }
       setModalVisible(false);
       form.resetFields();
-    } catch (error) {
+    } catch {
       message.error('Erro ao salvar pergunta');
     }
   };

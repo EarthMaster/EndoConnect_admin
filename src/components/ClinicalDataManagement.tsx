@@ -11,7 +11,7 @@ import {
   Form,
   Input,
   Select,
-  DatePicker,
+
   message,
   Row,
   Col,
@@ -20,16 +20,10 @@ import {
   Progress,
   Alert,
   Rate,
-  Timeline,
-  Popconfirm,
 } from 'antd';
 import {
-  PlusOutlined,
-  EditOutlined,
-  DeleteOutlined,
   CommentOutlined,
   UserOutlined,
-  CalendarOutlined,
   HeartOutlined,
   BarChartOutlined,
   EyeOutlined,
@@ -37,14 +31,11 @@ import {
   MessageOutlined,
   CheckCircleOutlined,
   StarOutlined,
-  TrophyOutlined,
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
-import dayjs from 'dayjs';
 
 const { Option } = Select;
 const { TextArea } = Input;
-const { RangePicker } = DatePicker;
 
 interface FeedbackRecord {
   id: string;
@@ -89,10 +80,8 @@ export default function FeedbackDataManagement() {
   const [feedbacks, setFeedbacks] = useState<FeedbackRecord[]>([]);
   const [engagementData, setEngagementData] = useState<EngagementData[]>([]);
   const [loading, setLoading] = useState(false);
-  const [modalVisible, setModalVisible] = useState(false);
   const [responseModalVisible, setResponseModalVisible] = useState(false);
   const [selectedFeedback, setSelectedFeedback] = useState<FeedbackRecord | null>(null);
-  const [form] = Form.useForm();
   const [responseForm] = Form.useForm();
   const [stats, setStats] = useState<DataStats>({
     totalFeedbacks: 0,
@@ -243,7 +232,7 @@ export default function FeedbackDataManagement() {
     setResponseModalVisible(true);
   };
 
-  const handleSubmitResponse = async (values: any) => {
+  const handleSubmitResponse = async () => {
     try {
       if (selectedFeedback) {
         const updatedFeedbacks = feedbacks.map(f =>
@@ -260,7 +249,7 @@ export default function FeedbackDataManagement() {
         message.success('Resposta enviada com sucesso');
         setResponseModalVisible(false);
       }
-    } catch (error) {
+    } catch {
       message.error('Erro ao enviar resposta');
     }
   };

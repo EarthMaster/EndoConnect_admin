@@ -19,21 +19,14 @@ import {
   Select,
   message,
   Popconfirm,
-  Tooltip,
 } from 'antd';
 import {
   UserOutlined,
   TeamOutlined,
   CrownOutlined,
-  ExperimentOutlined,
-  SettingOutlined,
   WarningOutlined,
   EyeOutlined,
   SafetyOutlined,
-  CalendarOutlined,
-  MailOutlined,
-  PhoneOutlined,
-  PlusOutlined,
   UserAddOutlined,
   CheckOutlined,
   ClockCircleOutlined,
@@ -242,7 +235,7 @@ export default function TeamMemberManagement() {
       setInviteModalVisible(false);
       inviteForm.resetFields();
       message.success(`Convite enviado para ${values.name}!`);
-    } catch (error) {
+    } catch {
       message.error('Erro ao enviar convite');
     }
   };
@@ -276,7 +269,7 @@ export default function TeamMemberManagement() {
       ));
 
       message.success('Membro ativado com sucesso!');
-    } catch (error) {
+    } catch {
       message.error('Erro ao ativar membro');
     }
   };
